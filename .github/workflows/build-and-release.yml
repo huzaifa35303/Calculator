@@ -1,0 +1,113 @@
+name: Build APK and Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows .exe
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build Windows Executable
+        run: |
+          npx @electron/packager . "f0-Calculator" --platform=win32 --arch=x64 --out=dist --icon=icon.ico --overwrite --ignore="dist"
+          Compress-Archive -Path "dist/f0-Calculator-win32-x64/*" -DestinationPath "dist/f0-Calculator-Windows-x64.zip" -Force
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: f0-Calculator-Windows-x64
+          path: dist/f0-Calculator-Windows-x64.zip
+          retention-days: 14
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Copy Web Assets
+        run: |
+          mkdir -p www
+          cp -r index.html icon.svg manifest.json icon.png www/ || true
+          npx cap sync android
+
+      - name: Build Android APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Prepare APK Output
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/f0-Calculator.apk
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: f0-Calculator-Android-APK
+          path: dist/f0-Calculator.apk
+          retention-days: 14
+
+  publish-release:
+    name: Publish to GitHub Releases
+    needs: [build-windows, build-android]
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: f0-Calculator-Windows-x64
+          path: release-assets/
+
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: f0-Calculator-Android-APK
+          path: release-assets/
+
+      - name: Publish Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/f0-Calculator-Windows-x64.zip
+            release-assets/f0-Calculator.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,26 @@
+{
+  "name": "f0-calculator",
+  "version": "1.0.0",
+  "description": "Precision scientific calculator and multi-category unit converter by f0undr",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:exe": "npx electron-packager . \"f0-Calculator\" --platform=win32 --arch=x64 --out=dist --icon=icon.ico --overwrite"
+  },
+  "keywords": [
+    "calculator",
+    "scientific",
+    "unit-converter",
+    "f0undr"
+  ],
+  "author": "huzaifa35303",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.7.2",
+    "electron-packager": "^17.1.2"
+  }
+}

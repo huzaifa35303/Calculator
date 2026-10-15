@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production / Build output
+dist/
+build/
+out/
+release/
+*.exe.tmp
+
+# Android build outputs & local properties
+android/.gradle/
+android/app/build/
+android/.idea/
+android/local.properties
+*.apk
+*.aab
+
+# Keep the download apk
+!downloads/f0-Calculator.apk
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

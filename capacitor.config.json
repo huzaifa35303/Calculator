@@ -1,0 +1,9 @@
+{
+  "appId": "com.f0undr.calculator",
+  "appName": "f0 Calculator",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
